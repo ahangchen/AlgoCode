@@ -92,15 +92,61 @@ public class Main {
     }
 
     public String intToRoman(int num) {
-        int[] values = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
-        String[] strs = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+        int[] values = { 1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1 };
+        String[] strs = { "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
         StringBuilder roman = new StringBuilder();
-        for (int i = 0; i < values.length; i++) {
-            while (num - values[i] > 0)
+        for(int i=0;i<values.length;i++) {
+            while(num - values[i] >= 0) {
                 num -= values[i];
-            roman.append(strs[i]);
+                roman.append(strs[i]);
+            }
         }
         return roman.toString();
+    }
+
+    public int romanToInt(String s) {
+        int[] values = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+        int result = 0;
+        String[] keys = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+        char[] cs = s.toCharArray();
+        int ci = 0;
+        for(int i = 0; i < keys.length; i ++) {
+            // for each key
+            char[] ck = keys[i].toCharArray();
+
+            // check key on the start of string, till string exhaust or key string exhaust
+            while(ci < cs.length) {
+                boolean exhaust = false, match=false;
+                // match chars
+                if(ck.length > cs.length - ci) {
+                    break;
+                }
+                boolean partMatch = false;
+                for(char k : ck) {
+                    if(cs[ci] == k) {
+                        match = true;
+                        partMatch = true;
+                        ci ++;
+                    } else {
+                        if(partMatch) {
+                            ci --;
+                        }
+                        match = false;
+                        exhaust = true;
+                        break;
+                    }
+                }
+                if(match) {
+                    result += values[i];
+
+                }
+                if(exhaust) {
+                    break;
+                }
+
+            }
+        }
+        return result;
     }
 
     public void rotate(int[][] matrix) {
@@ -204,30 +250,40 @@ public class Main {
         }
         return values;
     }
-
+    public ArrayList<Integer> preorderTraversal(TreeNode root) {
+        Stack<TreeNode> s = new Stack<>();
+        ArrayList<Integer> values = new ArrayList<>();
+        while (root != null || !s.isEmpty()) {
+            while (root != null) {
+                values.add(root.val);
+                s.push(root);//先访问再入栈
+                root = root.left;
+            }
+            root = s.pop();
+            values.add(root.val);
+            root = root.right;//如果是null，出栈并处理右子树
+        }
+        return values;
+    }
     public int searchInsert(int[] A, int target) {
 
         int l = 0, r = A.length - 1;
-        if (r == -1) {
+        if(r == -1) {
             return 0;
         }
         int mid;
-        while (r - l > 0) {
+        while(r >= l) {
             mid = (l + r) / 2;
-            if (A[mid] > target) {
+            if(A[mid] > target) {
                 r = mid - 1;
-            } else if (A[mid] == target) {
+            } else if(A[mid] == target) {
                 return mid;
             } else {
                 l = mid + 1;
             }
 
         }
-        if (r != 0) {
-            return r + 1;
-        } else {
-            return 0;
-        }
+        return l;
 
     }
 
@@ -370,32 +426,104 @@ public class Main {
         return j;
     }
 
-    public boolean searchMatrixHelper(int[][] matrix, int[] leftCorner, int[] rightCorner, int[] mid, int target) {
-        if (leftCorner[0] > rightCorner[0] || leftCorner[1] > rightCorner[1]) {
-            return false;
-        }
-        if (matrix[mid[0]][mid[1]] == target) {
-            return true;
-        }
-        if (matrix[mid[0]][mid[1]] > target) {
-            rightCorner[0] = mid[0];
-            rightCorner[1] = mid[1];
 
-        }
-        if (matrix[mid[0]][mid[1]] < target) {
-            leftCorner[0] = mid[0];
-            leftCorner[1] = mid[1];
-
-        }
-        mid[0] = (leftCorner[0] + rightCorner[0]) / 2;
-        mid[1] = (leftCorner[1] + rightCorner[1]) / 2;
-        return searchMatrixHelper(matrix, leftCorner, rightCorner, mid, target);
-
-    }
 
     public boolean searchMatrix(int[][] matrix, int target) {
-        int m = matrix.length - 1, n = matrix[0].length - 1;
-        return searchMatrixHelper(matrix, new int[]{0, 0}, new int[]{m, n}, new int[]{m / 2, n / 2}, target);
+        int m = matrix.length, n = matrix[0].length;
+        int up = 0, down = m - 1, mid = (up + down) / 2;
+
+        while(up <= down) {
+            if(matrix[mid][0] > target) {
+                // search up
+                down = mid - 1;
+            } else if(matrix[mid][n-1] >= target) {
+                // search in line
+                break;
+            } else {
+                //search down
+                up = mid + 1;
+            }
+            mid = (up + down) / 2;
+        }
+
+        if(up <= down) {
+            //search in line
+            int l = 0, r = n - 1;
+            int [] line = matrix[mid];
+            mid = (l + r) / 2;
+            while(l <= r) {
+                if(line[mid] > target) {
+                    //search left
+                    r = mid - 1;
+                } else if(line[mid] == target) {
+                    return true;
+                } else {
+                    //search right
+                    l = mid + 1;
+                }
+                mid = (l + r) / 2;
+            }
+            return false;
+        } else {
+            return false;
+        }
+    }
+    public int[][] generateMatrix(int n) {
+        int[][] matrix = new int[n ][ n];
+        for(int i = 0; i < n; i ++) {
+            for (int j = 0; j < n; j ++) {
+                matrix[i][j] = 0;
+            }
+        }
+        int pos_r = 0, pos_c = 0, l = 0,r = 1,u = 0,d = 1, move = 0;
+        for(int i = 0; i< n * n; i++) {
+            matrix[pos_r][pos_c] = i + 1;
+            // cur environment
+            if(pos_c == 0 || matrix[pos_r][pos_c - 1] != 0) l = 0; else l = 1;
+            if(pos_r == 0 || matrix[pos_r - 1][pos_c] != 0) u = 0; else u = 1;
+            if(pos_c == n - 1 || matrix[pos_r][pos_c + 1] != 0) r = 0; else r = 1;
+            if(pos_r == n - 1 || matrix[pos_r + 1][pos_c] != 0) d = 0; else d = 1;
+            switch(move) {
+                case 0 :{
+                    if(r == 1) {
+                        pos_c ++;
+                    } else {
+                        pos_r ++;
+                        move = 1;
+                    }
+                    break;
+                }
+                case 1:{
+                    if(d == 1) {
+                        pos_r ++;
+                    } else {
+                        pos_c --;
+                        move = 2;
+                    }
+                    break;
+                }
+                case 2:{
+                    if(l == 1) {
+                        pos_c --;
+                    } else {
+                        pos_r --;
+                        move = 3;
+                    }
+                    break;
+                }
+                case 3:{
+                    if(u == 1) {
+                        pos_r --;
+                    } else {
+                        pos_c ++;
+                        move = 0;
+                    }
+                    break;
+                }
+            }
+
+        }
+        return matrix;
     }
 
     public static void main(String[] args) {
@@ -424,10 +552,17 @@ public class Main {
 //        for (String p : ps) {
 //            System.out.println(p);
 //        }
-        int[] a = new int[]{};
-        int l = new Main().removeDuplicates(a);
-        for (int i = 0; i < l; i++) {
-            System.out.print(a[i]);
+//        int[] a = new int[]{};
+//        int l = new Main().removeDuplicates(a);
+//        for (int i = 0; i < l; i++) {
+//            System.out.print(a[i]);
+//        }
+        int n = 4;
+        int[][] m = new Main().generateMatrix(n);
+        for (int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j ++)
+                System.out.print(m[i][j]);
+            System.out.println();
         }
     }
 }
