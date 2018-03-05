@@ -5,6 +5,7 @@ import java.util.Stack;
 
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
+import static java.util.Arrays.sort;
 
 // Definition for binary tree with next pointer.
 class TreeLinkNode {
@@ -23,6 +24,16 @@ class TreeNode {
 
     TreeNode(int x) {
         val = x;
+    }
+}
+
+class ListNode {
+    int val;
+    ListNode next;
+
+    ListNode(int x) {
+        val = x;
+        next = null;
     }
 }
 
@@ -193,30 +204,198 @@ public class Main {
         }
         return values;
     }
+
     public int searchInsert(int[] A, int target) {
 
         int l = 0, r = A.length - 1;
-        if(r == -1) {
+        if (r == -1) {
             return 0;
         }
         int mid;
-        while(r - l > 0) {
+        while (r - l > 0) {
             mid = (l + r) / 2;
-            if(A[mid] > target) {
+            if (A[mid] > target) {
                 r = mid - 1;
-            } else if(A[mid] == target) {
+            } else if (A[mid] == target) {
                 return mid;
             } else {
                 l = mid + 1;
             }
 
         }
-        if(r != 0) {
+        if (r != 0) {
             return r + 1;
         } else {
             return 0;
         }
 
+    }
+
+    public int depth(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        int leftDepth = depth(root.left);
+        int rightDepth = depth(root.right);
+        return leftDepth > rightDepth ? leftDepth + 1 : rightDepth + 1;
+    }
+
+    public boolean isBalanced(TreeNode root) {
+        if (root == null) {
+            return true;
+        }
+        int leftDepth = depth(root.left);
+        int rightDepth = depth(root.right);
+        return Math.abs(leftDepth - rightDepth) < 2 && isBalanced(root.left) && isBalanced(root.right);
+    }
+
+    public int uniquePaths(int m, int n) {
+//        if(m == 1 || n == 1) return 1;
+//        if(m == 0 || n == 0) return 0;
+//        return uniquePaths(m - 1, n) + uniquePaths(m, n - 1);
+        int[][] ps = new int[m + 1][n + 1];
+        ps[0][0] = 0;
+        ps[0][1] = 0;
+        ps[1][0] = 0;
+        for (int i = 1; i <= m; i++) {
+            ps[i][1] = 1;
+        }
+        for (int j = 1; j <= n; j++) {
+            ps[1][j] = 1;
+        }
+        for (int i = 2; i <= m; i++) {
+            for (int j = 2; j <= n; j++) {
+                ps[i][j] = ps[i - 1][j] + ps[i][j - 1];
+            }
+        }
+        return ps[m][n];
+    }
+
+    public void swap(int[] A, int i, int j) {
+        int tmp = A[i];
+        A[i] = A[j];
+        A[j] = A[i];
+    }
+
+    public void sortColors(int[] A) {
+//        sort(A);
+        int begin = 0;
+        int end = A.length - 1;
+        int cur = 0;
+        while (cur <= end) {
+            // 所有的0放到数组前边
+            if (A[cur] == 0) {
+                A[cur] = A[begin] ^ A[cur] ^ (A[begin] = A[cur]);
+                begin++;
+                cur++;
+                // 所有2放到数组后边
+            } else if (A[cur] == 2) {
+                A[cur] = A[end] ^ A[cur] ^ (A[end] = A[cur]);
+                end--;
+            } else cur++;
+        }
+
+    }
+
+
+    public void pHelp(int n, int x, int y, String s, ArrayList<String> list) {
+        // 终止条件
+        if (y == n) {
+            list.add(s);
+        }
+        if (x < n) {
+            pHelp(n, x + 1, y, s + "(", list);
+        }
+        // 递归过程中 左括号x的个数必须大于等于右括号个数
+        if (x > y) {
+            pHelp(n, x, y + 1, s + ")", list);
+        }
+    }
+
+    public ArrayList<String> generateParenthesis(int n) {
+        ArrayList<String> list = new ArrayList<String>();
+        pHelp(n, 0, 0, "", list);
+        return list;
+    }
+
+
+    public int singleNumber(int[] A) {
+        int ones = 0;//记录只出现过1次的bits
+        int twos = 0;//记录只出现过2次的bits
+        int threes;
+        for (int i = 0; i < A.length; i++) {
+            int t = A[i];
+            twos |= ones & t;//要在更新ones前面更新twos
+            ones ^= t;
+            threes = ones & twos;//ones和twos中都为1即出现了3次
+            ones &= ~threes;//抹去出现了3次的bits
+            twos &= ~threes;
+        }
+        return ones;
+    }
+
+    public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        ListNode m = new ListNode(0);
+        ListNode n = m;
+        while (l1 != null) {
+            while (l2 != null && l2.val < l1.val) {
+                n.next = new ListNode(l2.val);
+                n = n.next;
+                l2 = l2.next;
+            }
+            n.next = new ListNode(l1.val);
+            n = n.next;
+            l1 = l1.next;
+        }
+        while (l2 != null) {
+            n.next = new ListNode(l2.val);
+            n = n.next;
+            l2 = l2.next;
+        }
+        return m.next;
+    }
+
+    public int removeDuplicates(int[] A) {
+        if (A == null || A.length == 0) {
+            return 0;
+        }
+        int j = 1, old = A[0];
+        for (int i = 1; i < A.length; i++) {
+            if (old != A[i]) {
+                A[j] = A[i];
+                j++;
+                old = A[i];
+            }
+        }
+        return j;
+    }
+
+    public boolean searchMatrixHelper(int[][] matrix, int[] leftCorner, int[] rightCorner, int[] mid, int target) {
+        if (leftCorner[0] > rightCorner[0] || leftCorner[1] > rightCorner[1]) {
+            return false;
+        }
+        if (matrix[mid[0]][mid[1]] == target) {
+            return true;
+        }
+        if (matrix[mid[0]][mid[1]] > target) {
+            rightCorner[0] = mid[0];
+            rightCorner[1] = mid[1];
+
+        }
+        if (matrix[mid[0]][mid[1]] < target) {
+            leftCorner[0] = mid[0];
+            leftCorner[1] = mid[1];
+
+        }
+        mid[0] = (leftCorner[0] + rightCorner[0]) / 2;
+        mid[1] = (leftCorner[1] + rightCorner[1]) / 2;
+        return searchMatrixHelper(matrix, leftCorner, rightCorner, mid, target);
+
+    }
+
+    public boolean searchMatrix(int[][] matrix, int target) {
+        int m = matrix.length - 1, n = matrix[0].length - 1;
+        return searchMatrixHelper(matrix, new int[]{0, 0}, new int[]{m, n}, new int[]{m / 2, n / 2}, target);
     }
 
     public static void main(String[] args) {
@@ -233,7 +412,22 @@ public class Main {
 //        root.right.left.left = null;
 //        root.right.left.right = null;
 //        new Main().connect(root);
-        int[] a = new int[]{2, 3, 5, 6};
-        System.out.println(new Main().searchInsert(a,1 ));
+//        int[] a = new int[]{2, 3, 5, 6};
+//        System.out.println(new Main().searchInsert(a,1 ));
+//        System.out.println(new Main().uniquePaths(1,2));
+//        int[] A = new int[]{0, 1, 0, 2, 1};
+//        new Main().sortColors(A);
+//        for (int a : A) {
+//            System.out.print(a);
+//        }
+//        ArrayList<String> ps = new Main().generateParenthesis(4);
+//        for (String p : ps) {
+//            System.out.println(p);
+//        }
+        int[] a = new int[]{};
+        int l = new Main().removeDuplicates(a);
+        for (int i = 0; i < l; i++) {
+            System.out.print(a[i]);
+        }
     }
 }
