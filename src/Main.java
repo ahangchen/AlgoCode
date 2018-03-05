@@ -5,7 +5,6 @@ import java.util.Stack;
 
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
-import static java.util.Arrays.sort;
 
 // Definition for binary tree with next pointer.
 class TreeLinkNode {
@@ -260,7 +259,6 @@ public class Main {
                 root = root.left;
             }
             root = s.pop();
-            values.add(root.val);
             root = root.right;//如果是null，出栈并处理右子树
         }
         return values;
